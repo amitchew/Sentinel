@@ -1,11 +1,11 @@
 
 import { Router } from 'express';
-import { chainSimulator } from '../context';
+import { activeNetworkService } from '../context';
 
 const router = Router();
 
 router.get('/metrics', (req, res) => {
-  const metrics = chainSimulator.getMetrics();
+  const metrics = activeNetworkService.getMetrics();
   res.json(metrics);
 });
 

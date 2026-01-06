@@ -1,7 +1,7 @@
 import { useNetworkStore } from '../store/networkStore';
 import { useValidatorStore } from '../store/validatorStore';
 
-const WS_URL = 'ws://localhost:3001';
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3001';
 
 export class WebSocketClient {
   private ws: WebSocket | null = null;

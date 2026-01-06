@@ -26,7 +26,7 @@ export const TPSChart = () => {
             .range([margin.left, width - margin.right]);
 
         const y = d3.scaleLinear()
-            .domain([0, d3.max(metrics, d => d.tps) || 3000])
+            .domain([0, Math.max(d3.max(metrics, d => d.tps) || 0, 5)])
             .nice()
             .range([height - margin.bottom, margin.top]);
 

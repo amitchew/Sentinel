@@ -45,7 +45,9 @@ export const ValidatorsPage = () => {
                                      <span className={`px-2 py-1 rounded-full text-xs font-medium border ${
                                         v.status === 'active' 
                                             ? 'bg-green-500/10 text-green-400 border-green-500/20' 
-                                            : 'bg-red-500/10 text-red-400 border-red-500/20'
+                                            : v.status === 'jailed'
+                                            ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                                            : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                                     }`}>
                                         {v.status}
                                     </span>

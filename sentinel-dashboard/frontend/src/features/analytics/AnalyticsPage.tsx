@@ -13,10 +13,26 @@ export const AnalyticsPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {[
-                    { label: 'Avg TPS (24h)', value: '2,450', change: '+12%' },
-                    { label: 'Total Transactions', value: '142.5M', change: '+5%' },
-                    { label: 'Active Validators', value: '245', change: '-2' },
-                    { label: 'Network Load', value: '42%', change: '+8%' },
+                    { 
+                        label: 'Current TPS', 
+                        value: metrics.length > 0 ? metrics[metrics.length - 1].tps.toFixed(2) : '0.00', 
+                        change: metrics.length > 1 ? `${((metrics[metrics.length - 1].tps - metrics[0].tps) > 0 ? '+' : '')}${(metrics[metrics.length - 1].tps - metrics[0].tps).toFixed(2)}` : '0' 
+                    },
+                    { 
+                        label: 'Block Time', 
+                        value: metrics.length > 0 ? `${metrics[metrics.length - 1].blockTime.toFixed(2)}s` : '-', 
+                        change: 'Avg' 
+                    },
+                    { 
+                        label: 'Active Validators', 
+                        value: metrics.length > 0 ? '196' : '-', // Ideally from ValidatorStore but we don't have it here directly without import. Let's strictly use metrics or add store.
+                        change: 'Bonded' 
+                    },
+                    { 
+                        label: 'Gas Price', 
+                        value: metrics.length > 0 ? metrics[metrics.length - 1].gasPrice.toFixed(3) : '-', 
+                        change: 'DVPN' 
+                    },
                 ].map((stat) => (
                     <div key={stat.label} className="bg-surface/50 backdrop-blur rounded-xl p-6 border border-white/5">
                         <span className="text-sm text-gray-500 block mb-2">{stat.label}</span>

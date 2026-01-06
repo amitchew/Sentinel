@@ -5,7 +5,7 @@ export interface Validator {
   stake: number;
   uptime: number;
   commission: number;
-  status: 'active' | 'jailed' | 'offline';
+  status: 'active' | 'jailed' | 'unbonding' | 'unbonded' | 'offline';
   region: string;
   peers: string[];
 }
