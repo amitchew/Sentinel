@@ -52,9 +52,7 @@ export class ValidatorNodeManager {
 
             this.dummy.position.copy(pos);
             
-            // FIXED: Logarithmic scaling to prevent massive nodes
-            // Clamp min/max for visual sanity (e.g., 0.5 to 4.0)
-            const logStake = Math.log10(v.stake + 10); // +10 to avoid log(0) or log(1) issues
+            const logStake = Math.log10(v.stake + 10);
             const baseScale = Math.max(0.7, Math.min(6.0, logStake / 2)); 
             
             this.dummy.scale.set(baseScale, baseScale, baseScale);
@@ -62,28 +60,21 @@ export class ValidatorNodeManager {
             this.dummy.updateMatrix();
             this.mesh.setMatrixAt(i, this.dummy.matrix);
 
-            // Default Color
-            this.color.setHex(0x374151); // Dark Gray base
+            this.color.setHex(0x374151);
 
             if (v.status === 'active') {
-                // "Cyber Void" Palette
-                // Rank-based interpolation
                 const t = 1 - (i / count); 
                 
                 if (t > 0.9) {
-                    // WHALES (Top 10%): Magma Pink -> Electric Blue
-                    // Pink: 0.9, Blue: 0.55
                     this.color.setHSL(0.9 - ((t - 0.9) * 3.5), 1.0, 0.6); 
                 } else {
-                    // STANDARD: Saturated Violet -> Deep Blue
-                    // Violet: 0.75, Blue: 0.6
                     const normalizedT = t / 0.9;
                     this.color.setHSL(0.6 + (normalizedT * 0.15), 0.9, 0.5 + (normalizedT * 0.2));
                 }
             }
-            else if (v.status === 'jailed') this.color.setHex(0xff003c); // Destructive Red
-            else if (v.status === 'unbonding') this.color.setHex(0xff9f1c); // Neon Orange
-            else if (v.status === 'unbonded') this.color.setHex(0x2b2d42); // Hollow Grey
+            else if (v.status === 'jailed') this.color.setHex(0xff003c);
+            else if (v.status === 'unbonding') this.color.setHex(0xff9f1c);
+            else if (v.status === 'unbonded') this.color.setHex(0x2b2d42);
 
             this.mesh.setColorAt(i, this.color);
         }

@@ -2,6 +2,9 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { useValidatorStore } from '../../store/validatorStore';
 import { useUIStore } from '../../store/uiStore';
 import { ValidatorNodeManager } from './ValidatorNode';
@@ -14,6 +17,7 @@ export const NetworkScene = () => {
     const sceneRef = useRef<THREE.Scene | null>(null);
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
     const controlsRef = useRef<OrbitControls | null>(null);
+    const composerRef = useRef<EffectComposer | null>(null);
     const raycaster = useRef(new THREE.Raycaster());
     const mouse = useRef(new THREE.Vector2());
     const frameIdRef = useRef<number>(0);
@@ -35,7 +39,6 @@ export const NetworkScene = () => {
         scene.fog = new THREE.FogExp2('#0a0a0b', 0.002);
         sceneRef.current = scene;
 
-
         const camera = new THREE.PerspectiveCamera(
             60, 
             containerRef.current.clientWidth / containerRef.current.clientHeight, 
@@ -45,13 +48,12 @@ export const NetworkScene = () => {
         camera.position.set(0, 100, 300);
         cameraRef.current = camera;
 
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
         renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.toneMapping = THREE.ReinhardToneMapping;
         containerRef.current.appendChild(renderer.domElement);
         rendererRef.current = renderer;
-
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
@@ -60,9 +62,25 @@ export const NetworkScene = () => {
         controls.minDistance = 20;
         controlsRef.current = controls;
 
-
         cameraRigRef.current = new CameraRig(camera, controls);
 
+        const composer = new EffectComposer(renderer);
+        
+        const renderPass = new RenderPass(scene, camera);
+        composer.addPass(renderPass);
+
+        const bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(containerRef.current.clientWidth, containerRef.current.clientHeight),
+            1.5,
+            0.4,
+            0.85
+        );
+        bloomPass.strength = 1.2;
+        bloomPass.radius = 0.5;
+        bloomPass.threshold = 0.1;
+        composer.addPass(bloomPass);
+
+        composerRef.current = composer;
 
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
         scene.add(ambientLight);
@@ -70,7 +88,6 @@ export const NetworkScene = () => {
         const pointLight = new THREE.PointLight(0xffffff, 1);
         pointLight.position.set(50, 50, 50);
         scene.add(pointLight);
-
 
         nodeManagerRef.current = new ValidatorNodeManager(scene);
         connectionManagerRef.current = new ConnectionLineManager(scene);
@@ -124,20 +141,22 @@ export const NetworkScene = () => {
             if (controlsRef.current) controlsRef.current.update();
             if (nodeManagerRef.current) nodeManagerRef.current.update();
             
-
-            
-            if (rendererRef.current && sceneRef.current && cameraRef.current) {
-                rendererRef.current.render(sceneRef.current, cameraRef.current);
+            // Render via Composer
+            if (composerRef.current) {
+                composerRef.current.render();
+            } else if (rendererRef.current && sceneRef.current && cameraRef.current) {
+                 rendererRef.current.render(sceneRef.current, cameraRef.current);
             }
         };
         animate();
 
 
         const handleResize = () => {
-            if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
+            if (!containerRef.current || !cameraRef.current || !rendererRef.current || !composerRef.current) return;
             cameraRef.current.aspect = containerRef.current.clientWidth / containerRef.current.clientHeight;
             cameraRef.current.updateProjectionMatrix();
             rendererRef.current.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+            composerRef.current.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
         };
         window.addEventListener('resize', handleResize);
 
